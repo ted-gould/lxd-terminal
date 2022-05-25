@@ -1,0 +1,46 @@
+#!/bin/bash
+
+set -e
+
+LXCCMD=${LXCCMD:-lxc}
+ACCNT=$USERNAME
+LXCIMAGE=${LXCIMAGE:-lxd-terminal-$ACCNT}
+LXCEXEC="${LXCCMD} exec ${LXCIMAGE} --"
+
+LXCIMAGELST=`$LXCCMD list --format csv ^$LXCIMAGE$`
+
+if [ ! "$LXCIMAGELST" == "" ]; then
+	echo "$LXCIMAGE exists"
+	exit 0
+fi
+
+# Allocate image
+${LXCCMD} launch ubuntu:22.04 ${LXCIMAGE}
+
+# Add the current user as a user in the image
+${LXCEXEC} useradd --groups sudo --shell ${SHELL} $USERNAME
+${LXCEXEC} rm -rf /home/$USERNAME
+${LXCEXEC} mkdir -p /home/$USERNAME
+${LXCEXEC} chown $USERNAME:$USERNAME /home/$USERNAME
+
+# Setup an ID map between host and guest
+HOSTUID=`id -u`
+HOSTGID=`id -u`
+GUESTUID=`${LXCEXEC} id -u $USERNAME`
+GUESTGID=`${LXCEXEC} id -g $USERNAME`
+
+printf "uid ${HOSTUID} ${GUESTUID}\ngid ${HOSTGID} ${GUESTGID}" | ${LXCCMD} config set ${LXCIMAGE} raw.idmap -
+${LXCCMD} restart ${LXCIMAGE}
+
+# Map the home directory from the host into the container
+${LXCCMD} config device add ${LXCIMAGE} home disk source=${HOME} path=/home/${USERNAME}
+
+# Map the snapd socket into the container
+
+
+# Map the /snap directory and /var/snap/ (ro?)
+
+
+# Map the LXD socket into the container
+
+

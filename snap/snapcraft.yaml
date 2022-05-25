@@ -81,7 +81,16 @@ parts:
       - libxkbcommon0
       - libxrandr2
       - libxrender1
+  lxd-terminal-scripts:
+    plugin: dump
+    source: .
+    source-subdir: scripts
 
 apps:
   lxd-terminal:
-    command: usr/local/bin/gnome-terminal
+    command: usr/local/bin/gnome-terminal -- $SNAP/lxd-terminal-run
+    plugs:
+      - lxd
+      - desktop
+      - x11
+      - wayland

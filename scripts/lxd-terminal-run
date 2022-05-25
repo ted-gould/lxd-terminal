@@ -1,0 +1,13 @@
+#!/bin/bash
+
+set -e
+
+# Ensure we have one
+${SNAP}/lxd-terminal-create
+
+LXCCMD=${LXCCMD:-lxc}
+ACCNT=$USERNAME
+LXCIMAGE=${LXCIMAGE:-lxd-terminal-$ACCNT}
+LXCEXEC="${LXCCMD} exec ${LXCIMAGE} --"
+
+exec ${LXCEXEC} login -f ${ACCNT}
