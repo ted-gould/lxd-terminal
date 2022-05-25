@@ -18,6 +18,10 @@ parts:
     plugin: meson
     source: https://gitlab.gnome.org/GNOME/gnome-terminal.git
     source-tag: gnome-42 # matches core22
+    override-pull: |
+      snapcraftctl pull
+      # Make it so we don't conflict on dbus
+      sed -i "s|org.gnome.Terminal|cx.gould.lxd-terminal|" $SNAPCRAFT_PART_SRC/src/terminal-defines.hh
     build-packages:
       - desktop-file-utils
       - docbook-to-man
@@ -36,6 +40,7 @@ parts:
       - -Ddocs=false
       - -Dnautilus_extension=false
       - -Dsearch_provider=false
+      - -Dprefix=/usr
     stage-packages:
       - libatk-bridge2.0-0
       - libatk1.0-0
@@ -81,16 +86,30 @@ parts:
       - libxkbcommon0
       - libxrandr2
       - libxrender1
+    override-prime: |
+      snapcraftctl prime
+      glib-compile-schemas $SNAPCRAFT_PRIME/usr/share/glib-2.0/schemas
   lxd-terminal-scripts:
     plugin: dump
     source: .
     source-subdir: scripts
 
+slots:
+  lxd-terminal-dbus:
+    interface: dbus
+    bus: session
+    name: cx.gould.lxd-terminal
+
 apps:
   lxd-terminal:
-    command: usr/local/bin/gnome-terminal -- $SNAP/lxd-terminal-run
+    command: usr/bin/gnome-terminal -- $SNAP/lxd-terminal-run
+    environment:
+      XDG_DATA_DIRS: $XDG_DATA_DIRS:$SNAP/usr/share
+    slots:
+      - lxd-terminal-dbus
     plugs:
       - lxd
       - desktop
+      - gsettings
       - x11
       - wayland
