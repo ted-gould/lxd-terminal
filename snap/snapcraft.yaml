@@ -93,6 +93,13 @@ parts:
     plugin: dump
     source: .
     source-subdir: scripts
+  lxd-client:
+    plugin: go
+    source: .
+    override-pull: |
+      GO111MODULE=off go get -v -x github.com/lxc/lxd/lxc
+    override-build: |
+      GO111MODULE=off go install github.com/lxc/lxd/lxc
 
 slots:
   lxd-terminal-dbus:
@@ -104,6 +111,8 @@ apps:
   lxd-terminal:
     command: usr/bin/gnome-terminal -- $SNAP/lxd-terminal-run
     environment:
+      LXCCMD: $SNAP/bin/lxc
+      LXD_DIR: /var/snap/lxd/common/lxd
       XDG_DATA_DIRS: $XDG_DATA_DIRS:$SNAP/usr/share
     slots:
       - lxd-terminal-dbus
