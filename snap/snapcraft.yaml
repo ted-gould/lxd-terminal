@@ -27,6 +27,7 @@ parts:
     override-pull: |
       snapcraftctl pull
       # Make it so we don't conflict
+      sed -i "s|/org/gnome/Terminal|/cx/gould/LXDTerminal|" $SNAPCRAFT_PART_SRC/src/terminal-defines.hh
       sed -i "s|org.gnome.Terminal|cx.gould.lxd-terminal|" $SNAPCRAFT_PART_SRC/src/terminal-defines.hh
       sed -i "s|GNOME_TERMINAL_SERVICE|LXD_TERMINAL_SERVICE|" $SNAPCRAFT_PART_SRC/src/terminal-defines.hh
       sed -i "s|GNOME_TERMINAL_SCREEN|LXD_TERMINAL_SCREEN|" $SNAPCRAFT_PART_SRC/src/terminal-defines.hh
@@ -146,6 +147,7 @@ apps:
       - lxd-terminal-dbus-plug
       - lxd
       - desktop
+      - desktop-legacy
       - gsettings
       - x11
       - wayland
@@ -165,6 +167,7 @@ apps:
     plugs:
       - lxd
       - desktop
+      - desktop-legacy
       - gsettings
       - x11
       - wayland
