@@ -28,10 +28,10 @@ parts:
       snapcraftctl pull
       # Make it so we don't conflict
       sed -i "s|/org/gnome/Terminal|/cx/gould/LXDTerminal|" $SNAPCRAFT_PART_SRC/src/terminal-defines.hh
-      sed -i "s|org.gnome.Terminal|cx.gould.lxd-terminal|" $SNAPCRAFT_PART_SRC/src/terminal-defines.hh
+      sed -i "s|org.gnome.Terminal|cx.gould.lxdterminal|" $SNAPCRAFT_PART_SRC/src/terminal-defines.hh
       sed -i "s|GNOME_TERMINAL_SERVICE|LXD_TERMINAL_SERVICE|" $SNAPCRAFT_PART_SRC/src/terminal-defines.hh
       sed -i "s|GNOME_TERMINAL_SCREEN|LXD_TERMINAL_SCREEN|" $SNAPCRAFT_PART_SRC/src/terminal-defines.hh
-      sed -i "s|org.gnome.Terminal|cx.gould.lxd-terminal|" $SNAPCRAFT_PART_SRC/src/org.gnome.Terminal.xml
+      sed -i "s|org.gnome.Terminal|cx.gould.lxdterminal|" $SNAPCRAFT_PART_SRC/src/org.gnome.Terminal.xml
     build-packages:
       - desktop-file-utils
       - docbook-to-man
@@ -52,6 +52,8 @@ parts:
       - -Dsearch_provider=false
       - -Dprefix=/usr
     stage-packages:
+      - adwaita-icon-theme-full
+      - gsettings-desktop-schemas
       - libatk-bridge2.0-0
       - libatk1.0-0
       - libatspi2.0-0
@@ -75,6 +77,7 @@ parts:
       - libpangoft2-1.0-0
       - libpixman-1-0
       - libpng16-16
+      - librsvg2-common
       - libthai0
       - libvte-2.91-0
       - libwayland-client0
@@ -102,6 +105,9 @@ parts:
     override-prime: |
       snapcraftctl prime
       glib-compile-schemas $SNAPCRAFT_PRIME/usr/share/glib-2.0/schemas
+      GDK_PIXBUF_MODULEDIR=$SNAPCRAFT_PRIME/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/gdk-pixbuf-2.0/2.10.0/loaders $SNAPCRAFT_PRIME/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/gdk-pixbuf-2.0/gdk-pixbuf-query-loaders > $SNAPCRAFT_PRIME/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/gdk-pixbuf-2.0/2.10.0/gdk-pixbuf-loaders.cache
+      sed -i "s|$SNAPCRAFT_PRIME||" $SNAPCRAFT_PRIME/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/gdk-pixbuf-2.0/2.10.0/gdk-pixbuf-loaders.cache
+      $SNAPCRAFT_PRIME/usr/bin/update-mime-database $SNAPCRAFT_PRIME/usr/share/mime/
   lxd-terminal-scripts:
     plugin: dump
     source: .
@@ -121,7 +127,7 @@ parts:
     override-build: |
       set -eux
       for deb in *.deb; do dpkg-deb -x $deb .; done
-      find usr/share/locale-langpack -type f -not -name "gtk30*.mo" -and -not -name "glib*.mo" -and -not -name "gdk*.mo" -and -not -name "libsoup*.mo" -and -not -name "gspell*.mo" -print -delete
+      find usr/share/locale-langpack -type f -not -name "gtk30*.mo" -and -not -name "glib*.mo" -and -not -name "gdk*.mo" -and -not -name "libsoup*.mo" -and -not -name "gspell*.mo" -delete
       mkdir -p $SNAPCRAFT_PART_INSTALL/usr/share
       cp -r usr/share/locale-langpack $SNAPCRAFT_PART_INSTALL/usr/share/
 
@@ -129,17 +135,18 @@ slots:
   lxd-terminal-dbus-slot:
     interface: dbus
     bus: session
-    name: cx.gould.lxd-terminal
+    name: cx.gould.lxdterminal
 plugs:
   lxd-terminal-dbus-plug:
     interface: dbus
     bus: session
-    name: cx.gould.lxd-terminal
+    name: cx.gould.lxdterminal
 
 apps:
   lxd-terminal:
     command: usr/bin/gnome-terminal -- $SNAP/lxd-terminal-run
     environment:
+      GDK_PIXBUF_MODULE_FILE: /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/gdk-pixbuf-2.0/2.10.0/gdk-pixbuf-loaders.cache
       LXCCMD: $SNAP/bin/lxc
       LXD_DIR: /var/snap/lxd/common/lxd
       XDG_DATA_DIRS: $XDG_DATA_DIRS:$SNAP/usr/share
@@ -159,6 +166,23 @@ apps:
       activates-on:
         - lxd-terminal-dbus-slot
     environment:
+      GDK_PIXBUF_MODULE_FILE: /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/gdk-pixbuf-2.0/2.10.0/gdk-pixbuf-loaders.cache
+      LXCCMD: $SNAP/bin/lxc
+      LXD_DIR: /var/snap/lxd/common/lxd
+      XDG_DATA_DIRS: $XDG_DATA_DIRS:$SNAP/usr/share
+    slots:
+      - lxd-terminal-dbus-slot
+    plugs:
+      - lxd
+      - desktop
+      - desktop-legacy
+      - gsettings
+      - x11
+      - wayland
+  servercmd:
+    command: usr/libexec/gnome-terminal-server
+    environment:
+      GDK_PIXBUF_MODULE_FILE: /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/gdk-pixbuf-2.0/2.10.0/gdk-pixbuf-loaders.cache
       LXCCMD: $SNAP/bin/lxc
       LXD_DIR: /var/snap/lxd/common/lxd
       XDG_DATA_DIRS: $XDG_DATA_DIRS:$SNAP/usr/share
@@ -175,8 +199,12 @@ apps:
 layout:
   /usr/share/i18n:
     bind: $SNAP/usr/share/i18n
+  /usr/share/icons:
+    bind: $SNAP/usr/share/icons
   /usr/share/locale:
     bind: $SNAP/usr/share/locale
+  /usr/share/mime:
+    bind: $SNAP/usr/share/mime
   /usr/share/X11/locale:
     bind: $SNAP/usr/share/X11/locale
   /usr/lib/locale:
@@ -187,4 +215,6 @@ layout:
     bind: $SNAP/usr/share/glib-2.0/schemas
   /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/gnome-terminal:
     bind: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/gnome-terminal
+  /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/gdk-pixbuf-2.0:
+    bind: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/gdk-pixbuf-2.0
 
