@@ -162,8 +162,17 @@ apps:
       - gsettings
       - x11
       - wayland
+  delete:
+    command: lxd-terminal-delete
+    environment:
+      LXCCMD: $SNAP/bin/lxc
+      LXD_DIR: /var/snap/lxd/common/lxd
+      XDG_DATA_DIRS: $XDG_DATA_DIRS:$SNAP/usr/share
+    plugs:
+      - lxd-terminal-dbus-plug
+      - lxd
   server:
-    command: usr/libexec/gnome-terminal-server
+    command: lxd-terminal-server
     daemon: simple
     passthrough:
       daemon-scope: user
