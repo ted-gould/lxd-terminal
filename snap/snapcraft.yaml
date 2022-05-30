@@ -55,6 +55,7 @@ parts:
       - -Dprefix=/usr
     stage-packages:
       - adwaita-icon-theme-full
+      - dmz-cursor-theme
       - gsettings-desktop-schemas
       - libatk-bridge2.0-0
       - libatk1.0-0
@@ -104,6 +105,7 @@ parts:
       - locales
       - locales-all
       - libc-bin
+      - yaru-theme-gtk
     override-prime: |
       snapcraftctl prime
       glib-compile-schemas $SNAPCRAFT_PRIME/usr/share/glib-2.0/schemas
