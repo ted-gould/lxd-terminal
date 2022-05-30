@@ -7,15 +7,12 @@ ACCNT=$USERNAME
 LXCIMAGE=${LXCIMAGE:-lxd-terminal-$ACCNT}
 LXCEXEC="${LXCCMD} exec ${LXCIMAGE} --"
 
-# Ensure we have one
-${SNAP}/lxd-terminal-create
-
 # Ensure it is running
 ${LXCCMD} start ${LXCIMAGE} 2> /dev/null || true
 
 # Stop when done
 cleanup () {
-	${LXCCMD} stop ${LXCIMAGE}
+	${LXCCMD} stop ${LXCIMAGE} || true
 }
 trap cleanup EXIT
 

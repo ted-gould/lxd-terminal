@@ -10,14 +10,28 @@ LXCEXEC="${LXCCMD} exec ${LXCIMAGE} --"
 LXCIMAGELST=`$LXCCMD list --format csv ^$LXCIMAGE$`
 
 if [ ! "$LXCIMAGELST" == "" ]; then
-	echo "$LXCIMAGE exists"
 	exit 0
 fi
 
 # Allocate image
+echo "Allocating LXC image ${LXCIMAGE}..."
 ${LXCCMD} launch ubuntu:22.04 ${LXCIMAGE}
 
+# Setup destruction on failure
+cleanup () {
+	echo "ERROR: Deleting ${LXCIMAGE} after return..."
+	read -t 30 -n 1
+	${LXCCMD} delete -f ${LXCIMAGE}
+}
+trap cleanup ERR
+
+# Update image
+echo "Updating image ... "
+${LXCEXEC} apt-get update -qq
+${LXCEXEC} apt-get dist-upgrade -qq -yy
+
 # Add the current user as a user in the image
+echo "Setting up user ... "
 ${LXCEXEC} useradd --groups sudo --shell ${SHELL} $USERNAME
 ${LXCEXEC} rm -rf /home/$USERNAME
 ${LXCEXEC} mkdir -p /home/$USERNAME
@@ -33,14 +47,13 @@ printf "uid ${HOSTUID} ${GUESTUID}\ngid ${HOSTGID} ${GUESTGID}" | ${LXCCMD} conf
 ${LXCCMD} restart ${LXCIMAGE}
 
 # Map the home directory from the host into the container
-${LXCCMD} config device add ${LXCIMAGE} home disk source=${HOME} path=/home/${USERNAME}
-
-# Map the snapd socket into the container
-
-
-# Map the /snap directory and /var/snap/ (ro?)
-
+mkdir -p ${SNAP_USER_COMMON}/home
+echo "Mapping ${SNAP_USER_COMMON}/home to /home/${USERNAME} ... "
+${LXCCMD} config device add ${LXCIMAGE} home disk source=${SNAP_USER_COMMON}/home path=/home/${USERNAME}
 
 # Map the LXD socket into the container
 
+
+
+echo "Image Building Complete"
 
