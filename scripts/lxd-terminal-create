@@ -25,10 +25,24 @@ cleanup () {
 }
 trap cleanup ERR
 
+# Configuring image
+echo "Configuring image ... "
+${LXCCMD} config set ${LXCIMAGE} environment.DISPLAY :1
+${LXCCMD} config set ${LXCIMAGE} environment.PULSE_SERVER unix:/tmp/pulse-native
+# NOTE: Breaks on non-nvidia systems. Need to figure out how to detect them
+# ${LXCCMD} config set ${LXCIMAGE} nvidia.driver.capabilities all
+# ${LXCCMD} config set ${LXCIMAGE} nvidia.runtime true
+
+echo "Adding devices ... "
+${LXCCMD} config device add ${LXCIMAGE} hostgpu gpu
+X11DISPLAYNUM=$( echo $DISPLAY | cut -d : -f 2 )
+${LXCCMD} config device add ${LXCIMAGE} x11proxy proxy bind=container connect=unix:@/tmp/.X11-unix/X1 listen=unix:@/tmp/.X11-unix/X${X11DISPLAYNUM} security.gid=$(id -g) security.uid=$(id -u)
+${LXCCMD} config device add ${LXCIMAGE} pulseproxy proxy bind=container connect=unix:/run/user/$(id -u)/pulse/native listen=unix:/tmp/pulse-native security.gid=$(id -g) security.uid=$(id -u) mode=0777
+
 # Update image
 echo "Updating image ... "
-${LXCEXEC} apt-get update -qq
-${LXCEXEC} apt-get dist-upgrade -qq -yy
+${LXCEXEC} env DEBIAN_FRONTEND=noninteractive apt-get update -qq
+${LXCEXEC} env DEBIAN_FRONTEND=noninteractive apt-get dist-upgrade -qq -yy
 
 # Add the current user as a user in the image
 echo "Setting up user ... "
@@ -36,10 +50,11 @@ ${LXCEXEC} useradd --groups sudo --shell ${SHELL} $USERNAME
 ${LXCEXEC} rm -rf /home/$USERNAME
 ${LXCEXEC} mkdir -p /home/$USERNAME
 ${LXCEXEC} chown $USERNAME:$USERNAME /home/$USERNAME
+echo "$USERNAME ALL=(ALL) NOPASSWD:ALL" | ${LXCEXEC} tee /etc/sudoers.d/lxd-terminal-user
 
 # Setup an ID map between host and guest
 HOSTUID=`id -u`
-HOSTGID=`id -u`
+HOSTGID=`id -g`
 GUESTUID=`${LXCEXEC} id -u $USERNAME`
 GUESTGID=`${LXCEXEC} id -g $USERNAME`
 
