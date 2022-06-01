@@ -1,5 +1,6 @@
 name: lxd-terminal
 base: core22
+icon: scripts/cx.gould.lxdterminal.svg
 version: '0.1alpha'
 summary: Terminal Application that uses an LXD Container
 description: |
@@ -149,6 +150,7 @@ plugs:
 apps:
   lxd-terminal:
     command: usr/bin/gnome-terminal
+    desktop: cx.gould.lxdterminal.desktop
     environment:
       GDK_PIXBUF_MODULE_FILE: /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/gdk-pixbuf-2.0/2.10.0/gdk-pixbuf-loaders.cache
       LXCCMD: $SNAP/bin/lxc

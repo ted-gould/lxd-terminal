@@ -1,0 +1,12 @@
+[Desktop Entry]
+Name=LXD Developer Terminal
+Comment=Use a writable machine in a container
+Keywords=shell;prompt;command;commandline;cmd;lxd;
+TryExec=lxd-terminal
+Exec=lxd-terminal
+Icon=$SNAP/cx.gould.lxdterminal.svg
+Type=Application
+Categories=GNOME;GTK;System;TerminalEmulator;
+StartupNotify=true
+StartupWMClass=Gnome-terminal
+X-GNOME-SingleWindow=false
