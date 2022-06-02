@@ -201,22 +201,10 @@ apps:
       - wayland
 
 layout:
-  /usr/share/i18n:
-    bind: $SNAP/usr/share/i18n
-  /usr/share/icons:
-    bind: $SNAP/usr/share/icons
-  /usr/share/locale:
-    bind: $SNAP/usr/share/locale
-  /usr/share/mime:
-    bind: $SNAP/usr/share/mime
-  /usr/share/X11/locale:
-    bind: $SNAP/usr/share/X11/locale
+  /usr/share:
+    bind: $SNAP/usr/share
   /usr/lib/locale:
     bind: $SNAP/usr/lib/locale
-  /usr/share/locale-langpack:
-    bind: $SNAP/usr/share/locale-langpack
-  /usr/share/glib-2.0/schemas:
-    bind: $SNAP/usr/share/glib-2.0/schemas
   /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/gnome-terminal:
     bind: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/gnome-terminal
   /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/gdk-pixbuf-2.0:
