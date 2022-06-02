@@ -8,5 +8,5 @@ Icon=$SNAP/cx.gould.lxdterminal.svg
 Type=Application
 Categories=GNOME;GTK;System;TerminalEmulator;
 StartupNotify=true
-StartupWMClass=Gnome-terminal
+StartupWMClass=lxd-terminal
 X-GNOME-SingleWindow=false
