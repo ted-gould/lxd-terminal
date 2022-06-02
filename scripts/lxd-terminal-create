@@ -7,7 +7,7 @@ ACCNT=$USERNAME
 LXCIMAGE=${LXCIMAGE:-lxd-terminal-$ACCNT}
 LXCEXEC="${LXCCMD} exec ${LXCIMAGE} --"
 
-LXCIMAGELST=`$LXCCMD list --format csv ^$LXCIMAGE$`
+LXCIMAGELST=`${LXCCMD} list --format csv ^${LXCIMAGE}$`
 
 if [ ! "$LXCIMAGELST" == "" ]; then
 	exit 0
@@ -26,18 +26,22 @@ cleanup () {
 trap cleanup ERR
 
 # Configuring image
-echo "Configuring image ... "
-${LXCCMD} config set ${LXCIMAGE} environment.DISPLAY :1
-${LXCCMD} config set ${LXCIMAGE} environment.PULSE_SERVER unix:/tmp/pulse-native
+# echo "Configuring image ... "
 # NOTE: Breaks on non-nvidia systems. Need to figure out how to detect them
 # ${LXCCMD} config set ${LXCIMAGE} nvidia.driver.capabilities all
 # ${LXCCMD} config set ${LXCIMAGE} nvidia.runtime true
 
-echo "Adding devices ... "
-${LXCCMD} config device add ${LXCIMAGE} hostgpu gpu
-X11DISPLAYNUM=$( echo $DISPLAY | cut -d : -f 2 )
-${LXCCMD} config device add ${LXCIMAGE} x11proxy proxy bind=container connect=unix:@/tmp/.X11-unix/X1 listen=unix:@/tmp/.X11-unix/X${X11DISPLAYNUM} security.gid=$(id -g) security.uid=$(id -u)
-${LXCCMD} config device add ${LXCIMAGE} pulseproxy proxy bind=container connect=unix:/run/user/$(id -u)/pulse/native listen=unix:/tmp/pulse-native security.gid=$(id -g) security.uid=$(id -u) mode=0777
+# Disable Pulse shared memory
+echo "Disabling Pulseaudio Shared Memory ... "
+${LXCEXEC} mkdir -p /etc/pulse/client.conf.d
+echo "enable-shm=no" | ${LXCEXEC} tee /etc/pulse/client.conf.d/lxd-terminal-no-shm.conf
+
+# Default environment variables
+echo "Setting default environment ... "
+echo "export DISPLAY=:1" | ${LXCEXEC} tee /etc/profile.d/lxd-terminal-display.sh
+${LXCEXEC} chmod +x /etc/profile.d/lxd-terminal-display.sh
+echo "export PULSE_SERVER=unix:/tmp/pulse-native" | ${LXCEXEC} tee /etc/profile.d/lxd-terminal-pulse.sh
+${LXCEXEC} chmod +x /etc/profile.d/lxd-terminal-pulse.sh
 
 # Update image
 echo "Updating image ... "
@@ -65,10 +69,35 @@ ${LXCCMD} restart ${LXCIMAGE}
 mkdir -p ${SNAP_USER_COMMON}/home
 echo "Mapping ${SNAP_USER_COMMON}/home to /home/${USERNAME} ... "
 ${LXCCMD} config device add ${LXCIMAGE} home disk source=${SNAP_USER_COMMON}/home path=/home/${USERNAME}
+echo "Mapping / to /host/root ... "
+${LXCEXEC} mkdir -p /host/root
+${LXCCMD} config device add ${LXCIMAGE} host-root disk source=/ path=/host/root readonly=true
+echo "Mapping $SNAP_REAL_HOME to /host/home ... "
+${LXCEXEC} mkdir -p /host/home
+${LXCCMD} config device add ${LXCIMAGE} host-home disk source=${SNAP_REAL_HOME} path=/host/home/
 
-# Map the LXD socket into the container
+if ! [ -e ${SNAP_USER_COMMON}/home/host ]; then
+	ln -s /host/home ${SNAP_USER_COMMON}/home/host
+fi
+
+echo "Adding devices ... "
+${LXCCMD} config device add ${LXCIMAGE} host-gpu gpu
+X11DISPLAYNUM=$( echo $DISPLAY | cut -d : -f 2 )
+${LXCCMD} config device add ${LXCIMAGE} x11-proxy proxy bind=container connect=unix:@/tmp/.X11-unix/X${X11DISPLAYNUM} listen=unix:@/tmp/.X11-unix/X1 security.gid=$(id -g) security.uid=$(id -u)
+${LXCCMD} config device add ${LXCIMAGE} pulse-proxy proxy bind=container connect=unix:/run/user/$(id -u)/pulse/native listen=unix:/tmp/pulse-native security.gid=$(id -g) security.uid=$(id -u) mode=0777 uid=${GUESTUID} gid=${GUESTGID}
 
 
+echo "Disabling LXD ... "
+${LXCEXEC} systemctl is-system-running --wait --quiet
+${LXCEXEC} find /etc/systemd/system -maxdepth 1 -name "snap*lxd*" -not -name "*.mount" | xargs -n 1 basename | xargs -n 1 ${LXCEXEC} systemctl disable
 
+echo "Connecting to host LXD ... "
+${LXCCMD} config device add ${LXCIMAGE} lxd-proxy proxy bind=container connect=unix:/var/snap/lxd/common/lxd/unix.socket listen=unix:/var/snap/lxd/common/lxd/unix.socket security.gid=$(id -g) security.uid=$(id -u) mode=0777 uid=${GUESTUID} gid=${GUESTGID}
+
+echo "Restarting LXD image ... "
+${LXCCMD} restart ${LXCIMAGE}
+
+echo
+echo
 echo "Image Building Complete"
 
