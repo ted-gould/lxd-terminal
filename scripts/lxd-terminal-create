@@ -2,6 +2,9 @@
 
 set -e
 
+bold=$(tput bold)
+normal=$(tput sgr0)
+
 LXCCMD=${LXCCMD:-lxc}
 ACCNT=$USERNAME
 LXCIMAGE=${LXCIMAGE:-lxd-terminal-$ACCNT}
@@ -14,12 +17,12 @@ if [ ! "$LXCIMAGELST" == "" ]; then
 fi
 
 # Allocate image
-echo "Allocating LXC image ${LXCIMAGE}..."
+echo "${bold}Allocating LXC image ${LXCIMAGE}...${normal}"
 ${LXCCMD} launch ubuntu:22.04 ${LXCIMAGE}
 
 # Setup destruction on failure
 cleanup () {
-	echo "ERROR: Deleting ${LXCIMAGE} after return..."
+	echo "${bold}ERROR: Deleting ${LXCIMAGE} after return...${normal}"
 	read -t 30 -n 1
 	${LXCCMD} delete -f ${LXCIMAGE}
 }
@@ -32,24 +35,24 @@ trap cleanup ERR
 # ${LXCCMD} config set ${LXCIMAGE} nvidia.runtime true
 
 # Disable Pulse shared memory
-echo "Disabling Pulseaudio Shared Memory ... "
+echo "${bold}Disabling Pulseaudio Shared Memory ... ${normal}"
 ${LXCEXEC} mkdir -p /etc/pulse/client.conf.d
 echo "enable-shm=no" | ${LXCEXEC} tee /etc/pulse/client.conf.d/lxd-terminal-no-shm.conf
 
 # Default environment variables
-echo "Setting default environment ... "
+echo "${bold}Setting default environment ... ${normal}"
 echo "export DISPLAY=:1" | ${LXCEXEC} tee /etc/profile.d/lxd-terminal-display.sh
 ${LXCEXEC} chmod +x /etc/profile.d/lxd-terminal-display.sh
 echo "export PULSE_SERVER=unix:/tmp/pulse-native" | ${LXCEXEC} tee /etc/profile.d/lxd-terminal-pulse.sh
 ${LXCEXEC} chmod +x /etc/profile.d/lxd-terminal-pulse.sh
 
 # Update image
-echo "Updating image ... "
+echo "${bold}Updating image ... ${normal}"
 ${LXCEXEC} env DEBIAN_FRONTEND=noninteractive apt-get update -qq
 ${LXCEXEC} env DEBIAN_FRONTEND=noninteractive apt-get dist-upgrade -qq -yy
 
 # Add the current user as a user in the image
-echo "Setting up user ... "
+echo "${bold}Setting up user ... ${normal}"
 ${LXCEXEC} useradd --groups sudo --shell ${SHELL} $USERNAME
 ${LXCEXEC} rm -rf /home/$USERNAME
 ${LXCEXEC} mkdir -p /home/$USERNAME
@@ -67,37 +70,35 @@ ${LXCCMD} restart ${LXCIMAGE}
 
 # Map the home directory from the host into the container
 mkdir -p ${SNAP_USER_COMMON}/home
-echo "Mapping ${SNAP_USER_COMMON}/home to /home/${USERNAME} ... "
+echo "${bold}Mapping ${SNAP_USER_COMMON}/home to /home/${USERNAME} ... ${normal}"
 ${LXCCMD} config device add ${LXCIMAGE} home disk source=${SNAP_USER_COMMON}/home path=/home/${USERNAME}
-echo "Mapping / to /host/root ... "
+echo "${bold}Mapping / to /host/root ... ${normal}"
 ${LXCEXEC} mkdir -p /host/root
 ${LXCCMD} config device add ${LXCIMAGE} host-root disk source=/ path=/host/root readonly=true
-echo "Mapping $SNAP_REAL_HOME to /host/home ... "
+echo "${bold}Mapping $SNAP_REAL_HOME to /host/home ... ${normal}"
 ${LXCEXEC} mkdir -p /host/home
 ${LXCCMD} config device add ${LXCIMAGE} host-home disk source=${SNAP_REAL_HOME} path=/host/home/
 
-if ! [ -e ${SNAP_USER_COMMON}/home/host ]; then
-	ln -s /host/home ${SNAP_USER_COMMON}/home/host
-fi
+ln -s /host/home ${SNAP_USER_COMMON}/home/host || true
 
-echo "Adding devices ... "
+echo "${bold}Adding devices ... ${normal}"
 ${LXCCMD} config device add ${LXCIMAGE} host-gpu gpu
 X11DISPLAYNUM=$( echo $DISPLAY | cut -d : -f 2 )
 ${LXCCMD} config device add ${LXCIMAGE} x11-proxy proxy bind=container connect=unix:@/tmp/.X11-unix/X${X11DISPLAYNUM} listen=unix:@/tmp/.X11-unix/X1 security.gid=$(id -g) security.uid=$(id -u)
 ${LXCCMD} config device add ${LXCIMAGE} pulse-proxy proxy bind=container connect=unix:/run/user/$(id -u)/pulse/native listen=unix:/tmp/pulse-native security.gid=$(id -g) security.uid=$(id -u) mode=0777 uid=${GUESTUID} gid=${GUESTGID}
 
 
-echo "Disabling LXD ... "
+echo "${bold}Disabling LXD ... ${normal}"
 ${LXCEXEC} systemctl is-system-running --wait --quiet
 ${LXCEXEC} find /etc/systemd/system -maxdepth 1 -name "snap*lxd*" -not -name "*.mount" | xargs -n 1 basename | xargs -n 1 ${LXCEXEC} systemctl disable
 
-echo "Connecting to host LXD ... "
+echo "${bold}Connecting to host LXD ... ${normal}"
 ${LXCCMD} config device add ${LXCIMAGE} lxd-proxy proxy bind=container connect=unix:/var/snap/lxd/common/lxd/unix.socket listen=unix:/var/snap/lxd/common/lxd/unix.socket security.gid=$(id -g) security.uid=$(id -u) mode=0777 uid=${GUESTUID} gid=${GUESTGID}
 
-echo "Restarting LXD image ... "
+echo "${bold}Restarting LXD image ... ${normal}"
 ${LXCCMD} restart ${LXCIMAGE}
 
 echo
 echo
-echo "Image Building Complete"
+echo "${bold}Image Building Complete${normal}"
 

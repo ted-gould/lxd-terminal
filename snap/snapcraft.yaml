@@ -33,7 +33,7 @@ parts:
       sed -i "s|GNOME_TERMINAL_SERVICE|LXD_TERMINAL_SERVICE|" $SNAPCRAFT_PART_SRC/src/terminal-defines.hh
       sed -i "s|GNOME_TERMINAL_SCREEN|LXD_TERMINAL_SCREEN|" $SNAPCRAFT_PART_SRC/src/terminal-defines.hh
       sed -i "s|org.gnome.Terminal|cx.gould.lxdterminal|" $SNAPCRAFT_PART_SRC/src/org.gnome.Terminal.xml
-      sed -i "s|gdk_set_program_class(\"Gnome-terminal\");|gdk_set_program_class(\"lxd-terminal\");" $SNAPCRAFT_PART_SRC/src/terminal-app.cc
+      sed -i "s|gdk_set_program_class(\"Gnome-terminal\");|gdk_set_program_class(\"lxd-terminal\");|" $SNAPCRAFT_PART_SRC/src/terminal-app.cc
       # Change the default shell
       cp $SNAPCRAFT_PROJECT_DIR/eggshell.cc $SNAPCRAFT_PART_SRC/src/
     build-packages:
@@ -136,6 +136,10 @@ parts:
       find usr/share/locale-langpack -type f -not -name "gtk30*.mo" -and -not -name "glib*.mo" -and -not -name "gdk*.mo" -and -not -name "libsoup*.mo" -and -not -name "gspell*.mo" -delete
       mkdir -p $SNAPCRAFT_PART_INSTALL/usr/share
       cp -r usr/share/locale-langpack $SNAPCRAFT_PART_INSTALL/usr/share/
+  zenity:
+    plugin: nil
+    stage-packages:
+      - zenity
 
 slots:
   lxd-terminal-dbus-slot:
@@ -150,7 +154,7 @@ plugs:
 
 apps:
   lxd-terminal:
-    command: usr/bin/gnome-terminal
+    command: lxd-terminal-launch
     desktop: cx.gould.lxdterminal.desktop
     environment:
       GDK_PIXBUF_MODULE_FILE: /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/gdk-pixbuf-2.0/2.10.0/gdk-pixbuf-loaders.cache
