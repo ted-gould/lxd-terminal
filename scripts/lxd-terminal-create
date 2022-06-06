@@ -57,7 +57,7 @@ ${LXCEXEC} useradd --groups sudo --shell ${SHELL} $USERNAME
 ${LXCEXEC} rm -rf /home/$USERNAME
 ${LXCEXEC} mkdir -p /home/$USERNAME
 ${LXCEXEC} chown $USERNAME:$USERNAME /home/$USERNAME
-echo "$USERNAME ALL=(ALL) NOPASSWD:ALL\nDefaults:$USERNAME env_keep += \"DISPLAY PULSE_SERVER LXD_DIR\"\n" | ${LXCEXEC} tee /etc/sudoers.d/lxd-terminal-user
+printf "$USERNAME ALL=(ALL) NOPASSWD:ALL\nDefaults:$USERNAME env_keep += \"DISPLAY PULSE_SERVER LXD_DIR\"\n" | ${LXCEXEC} tee /etc/sudoers.d/lxd-terminal-user
 
 # Setup an ID map between host and guest
 HOSTUID=`id -u`
