@@ -87,13 +87,11 @@ X11DISPLAYNUM=$( echo $DISPLAY | cut -d : -f 2 )
 ${LXCCMD} config device add ${LXCIMAGE} x11-proxy proxy bind=container connect=unix:@/tmp/.X11-unix/X${X11DISPLAYNUM} listen=unix:@/tmp/.X11-unix/X1 security.gid=$(id -g) security.uid=$(id -u)
 ${LXCCMD} config device add ${LXCIMAGE} pulse-proxy proxy bind=container connect=unix:/run/user/$(id -u)/pulse/native listen=unix:/tmp/pulse-native security.gid=$(id -g) security.uid=$(id -u) mode=0777 uid=${GUESTUID} gid=${GUESTGID}
 
-
-echo "${bold}Disabling LXD ... ${normal}"
-${LXCEXEC} systemctl is-system-running --wait --quiet
-${LXCEXEC} find /etc/systemd/system -maxdepth 1 -name "snap*lxd*" -not -name "*.mount" | xargs -n 1 basename | xargs -n 1 ${LXCEXEC} systemctl disable
-
 echo "${bold}Connecting to host LXD ... ${normal}"
-${LXCCMD} config device add ${LXCIMAGE} lxd-proxy proxy bind=container connect=unix:/var/snap/lxd/common/lxd/unix.socket listen=unix:/var/snap/lxd/common/lxd/unix.socket security.gid=$(id -g) security.uid=$(id -u) mode=0777 uid=${GUESTUID} gid=${GUESTGID}
+${LXCEXEC} mkdir -p /srv/lxd
+${LXCCMD} config device add ${LXCIMAGE} lxd-proxy proxy bind=container connect=unix:/var/snap/lxd/common/lxd/unix.socket listen=unix:/srv/lxd/unix.socket
+echo "export LXD_DIR=/srv/lxd" | ${LXCEXEC} tee /etc/profile.d/lxd-terminal-lxd.sh
+${LXCEXEC} chmod +x /etc/profile.d/lxd-terminal-lxd.sh
 
 echo "${bold}Restarting LXD image ... ${normal}"
 ${LXCCMD} restart ${LXCIMAGE}

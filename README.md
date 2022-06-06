@@ -51,3 +51,10 @@ be careful with what you install!
 Now that the container is built the terminal just creates a login shell to the container
 and you can do what ever you want. When you close all of the terminal windows the container
 will be shutdown to save on resources.
+
+## Questions (and some answers)
+
+### How do I used LXD?
+
+The LXD socket is mapped to `/srv/lxd/unix.socket` but the permissions are set to
+require root. So you should be able to use it with `sudo lxc`.
