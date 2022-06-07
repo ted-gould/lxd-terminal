@@ -136,10 +136,16 @@ parts:
       find usr/share/locale-langpack -type f -not -name "gtk30*.mo" -and -not -name "glib*.mo" -and -not -name "gdk*.mo" -and -not -name "libsoup*.mo" -and -not -name "gspell*.mo" -delete
       mkdir -p $SNAPCRAFT_PART_INSTALL/usr/share
       cp -r usr/share/locale-langpack $SNAPCRAFT_PART_INSTALL/usr/share/
-  zenity:
-    plugin: nil
-    stage-packages:
-      - zenity
+  zenity: # Build instead of the Ubuntu package because it pulls in webkit, which is 100MB larger
+    plugin: meson
+    source: https://gitlab.gnome.org/GNOME/zenity.git
+    source-tag: 3.42.1
+    build-packages:
+      - libgtk-3-dev
+    meson-parameters:
+      - -Dprefix=/usr
+    stage:
+      - -usr/share/help
 
 slots:
   lxd-terminal-dbus-slot:
