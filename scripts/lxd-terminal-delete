@@ -7,4 +7,4 @@ ACCNT=$USERNAME
 LXCIMAGE=${LXCIMAGE:-lxd-terminal-$ACCNT}
 LXCEXEC="${LXCCMD} exec ${LXCIMAGE} --"
 
-zenity --question --default-cancel --title="LXD Terminal Delete" --text="Deleting the container for LXD Terminal will remove all installed packages and cause a new container to be built the next time you run the program.\n\nDo you want to delete the container?" && ${LXCCMD} delete -f ${LXCIMAGE}
+zenity --question --default-cancel --title="LXD Terminal Delete" --text="Deleting the container for LXD Terminal will remove all installed packages and cause a new container to be built the next time you run the program.\n\nDo you want to delete the container?" && ( ${LXCCMD} delete -f ${LXCIMAGE} | zenity --progress --pulsate --no-cancel --title="LXD Terminal Delete" --text="Deleting LXD Terminal Container" )
