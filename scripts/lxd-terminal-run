@@ -3,7 +3,7 @@
 set -e
 
 LXCCMD=${LXCCMD:-lxc}
-ACCNT=$USERNAME
+ACCNT=$(id -u -n)
 LXCIMAGE=${LXCIMAGE:-lxd-terminal-$ACCNT}
 LXCEXEC="${LXCCMD} exec ${LXCIMAGE} --"
 
