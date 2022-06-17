@@ -177,6 +177,7 @@ apps:
       - wayland
   delete:
     command: lxd-terminal-delete
+    desktop: lxd-terminal-delete.desktop
     environment:
       LXCCMD: $SNAP/bin/lxc
       LXD_DIR: /var/snap/lxd/common/lxd
@@ -184,6 +185,8 @@ apps:
     plugs:
       - lxd-terminal-dbus-plug
       - lxd
+      - x11
+      - wayland
   server:
     command: lxd-terminal-server
     daemon: simple
