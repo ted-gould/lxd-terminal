@@ -4,5 +4,5 @@ Comment=Remove the container created by LXD Terminal
 Keywords=command;lxd;terminal;delete
 TryExec=lxd-terminal.delete
 Exec=lxd-terminal.delete
-Icon=${SNAP}/lxd-terminal-delete.svg
+Icon=share/lxd-terminal-delete.svg
 Type=Application

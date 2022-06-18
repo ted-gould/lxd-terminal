@@ -1,6 +1,5 @@
 name: lxd-terminal
 base: core22
-icon: scripts/cx.gould.lxdterminal.svg
 version: '0.1alpha'
 summary: Terminal Application that uses an LXD Container
 description: |
@@ -118,6 +117,10 @@ parts:
     plugin: dump
     source: .
     source-subdir: scripts
+  lxd-terminal-data:
+    plugin: dump
+    source: .
+    source-subdir: data
   lxd-client:
     plugin: go
     source: .
@@ -161,7 +164,7 @@ plugs:
 apps:
   lxd-terminal:
     command: lxd-terminal-launch
-    desktop: cx.gould.lxdterminal.desktop
+    desktop: share/cx.gould.lxdterminal.desktop
     environment:
       GDK_PIXBUF_MODULE_FILE: /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/gdk-pixbuf-2.0/2.10.0/gdk-pixbuf-loaders.cache
       LXCCMD: $SNAP/bin/lxc
@@ -177,8 +180,9 @@ apps:
       - wayland
   delete:
     command: lxd-terminal-delete
-    desktop: lxd-terminal-delete.desktop
+    desktop: share/lxd-terminal-delete.desktop
     environment:
+      GDK_PIXBUF_MODULE_FILE: /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/gdk-pixbuf-2.0/2.10.0/gdk-pixbuf-loaders.cache
       LXCCMD: $SNAP/bin/lxc
       LXD_DIR: /var/snap/lxd/common/lxd
       XDG_DATA_DIRS: $XDG_DATA_DIRS:$SNAP/usr/share
