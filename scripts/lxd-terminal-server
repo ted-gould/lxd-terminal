@@ -16,4 +16,7 @@ cleanup () {
 }
 trap cleanup EXIT
 
+# Ensure userspace is running
+${LXCEXEC} systemctl is-system-running --wait
+
 ${SNAP}/usr/libexec/gnome-terminal-server
