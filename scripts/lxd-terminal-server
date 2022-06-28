@@ -7,16 +7,34 @@ ACCNT=$(id -u -n)
 LXCIMAGE=${LXCIMAGE:-lxd-terminal-$ACCNT}
 LXCEXEC="${LXCCMD} exec ${LXCIMAGE} --"
 
-# Ensure it is running
-${LXCCMD} start ${LXCIMAGE} 2> /dev/null || true
 
-# Stop when done
-cleanup () {
-	${LXCCMD} stop ${LXCIMAGE} || true
-}
-trap cleanup EXIT
+STATE=$( ${LXCCMD} list -f csv -c s "^${LXCIMAGE}$" )
 
-# Ensure userspace is running
-${LXCEXEC} systemctl is-system-running --wait
+if [ "${STATE}" == "" ]; then
+	zenity --error --title "LXD Terminal" --text "Unable to determine state for container <tt>${LXCIMAGE}</tt>. Can not start terminal service." 
+	exit -1
+fi
+
+if [ "${STATE}" != "RUNNING" ]; then
+	# Stop when done
+	cleanup () {
+		${LXCCMD} stop ${LXCIMAGE} || true
+	}
+	trap cleanup EXIT
+
+	(
+		# Ensure it is running
+		echo "# Starting container <tt>${LXCIMAGE}</tt>…"
+		${LXCCMD} start ${LXCIMAGE} 2> /dev/null || true
+
+		# Ensure userspace is running
+		echo "# Waiting on user-space for container <tt>${LXCIMAGE}</tt>…"
+		${LXCEXEC} systemctl is-system-running --wait
+
+	# Track it in a dialog
+	) | zenity --progress --title "LXD Terminal" --text "Starting…" --pulsate 
+else
+	echo "Already Running"
+fi
 
 ${SNAP}/usr/libexec/gnome-terminal-server
