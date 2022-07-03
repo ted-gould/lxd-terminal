@@ -1,6 +1,6 @@
 name: lxd-terminal
 base: core22
-version: '0.1alpha'
+version: '0.2'
 summary: Terminal Application that uses an LXD Container
 description: |
   Fully confined Developer Console which uses an
