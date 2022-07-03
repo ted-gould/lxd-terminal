@@ -24,15 +24,15 @@ if [ "${STATE}" != "RUNNING" ]; then
 
 	(
 		# Ensure it is running
-		echo "# Starting container <tt>${LXCIMAGE}</tt>…"
+		echo "# Starting container: ${LXCIMAGE}…"
 		${LXCCMD} start ${LXCIMAGE} 2> /dev/null || true
 
 		# Ensure userspace is running
-		echo "# Waiting on user-space for container <tt>${LXCIMAGE}</tt>…"
+		echo "# Waiting on user-space for container: ${LXCIMAGE}…"
 		${LXCEXEC} systemctl is-system-running --wait
 
 	# Track it in a dialog
-	) | zenity --progress --title "LXD Terminal" --text "Starting…" --pulsate 
+	) | zenity --progress --title "LXD Terminal" --text "Starting…" --pulsate --auto-close
 else
 	echo "Already Running"
 fi
