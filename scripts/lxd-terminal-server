@@ -7,11 +7,15 @@ ACCNT=$(id -u -n)
 LXCIMAGE=${LXCIMAGE:-lxd-terminal-$ACCNT}
 LXCEXEC="${LXCCMD} exec ${LXCIMAGE} --"
 
+ZENITYWM="--name \"LXD Developer Terminal\" --class lxd-terminal --window-icon ${SNAP}/share/cx.gould.lxdterminal.svg"
+
+# Trying to make everything appear with the same icon
+export BAMF_DESKTOP_FILE_HINT=/var/lib/snapd/desktop/applications/lxd-terminal_lxd-terminal.desktop
 
 STATE=$( ${LXCCMD} list -f csv -c s "^${LXCIMAGE}$" )
 
 if [ "${STATE}" == "" ]; then
-	zenity --error --title "LXD Terminal" --text "Unable to determine state for container <tt>${LXCIMAGE}</tt>. Can not start terminal service." 
+	zenity ${ZENITYWM} --error --title "LXD Terminal" --text "Unable to determine state for container <tt>${LXCIMAGE}</tt>. Can not start terminal service." 
 	exit -1
 fi
 
@@ -32,9 +36,9 @@ if [ "${STATE}" != "RUNNING" ]; then
 		${LXCEXEC} systemctl is-system-running --wait
 
 	# Track it in a dialog
-	) | zenity --progress --title "LXD Terminal" --text "Starting…" --pulsate --auto-close
+	) | zenity ${ZENITYWM} --progress --title "LXD Terminal" --text "Starting…" --pulsate --auto-close
 else
 	echo "Already Running"
 fi
 
-${SNAP}/usr/libexec/gnome-terminal-server
+exec ${SNAP}/usr/libexec/gnome-terminal-server

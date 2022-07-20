@@ -5,7 +5,7 @@ set -e
 if snapctl is-connected lxd ; then
 	echo "LXD Connected"
 else
-	zenity --warning --title "LXD Connection Required" --text "LXD Developer Terminal can not work without a connection to LXD. You'll have to connect it in the settings application, the store or on the command line with:\n\n<tt>snap connect lxd-terminal:lxd lxd:lxd</tt>\n\n<b>NOTE:</b> the LXD interface is one that allows a significant amount of system access. Don't do this unless you understand the implications."
+	zenity --name "LXD Developer Terminal" --class lxd-terminal --warning --title "LXD Connection Required" --text "LXD Developer Terminal can not work without a connection to LXD. You'll have to connect it in the settings application, the store or on the command line with:\n\n<tt>snap connect lxd-terminal:lxd lxd:lxd</tt>\n\n<b>NOTE:</b> the LXD interface is one that allows a significant amount of system access. Don't do this unless you understand the implications."
 	exit 1
 fi
 
