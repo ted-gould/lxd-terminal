@@ -13,7 +13,6 @@ description: |
   You'll need to execute a couple of commands to make this work
   ```
   snap set system experimental.user-daemons=true
-  snap connect lxd-terminal:lxd lxd:lxd
   ```
 
 grade: stable
