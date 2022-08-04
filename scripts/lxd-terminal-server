@@ -41,4 +41,5 @@ else
 	echo "Already Running"
 fi
 
-exec ${SNAP}/usr/libexec/gnome-terminal-server
+# NOTE: No exec so that we can stop when finished
+${SNAP}/usr/libexec/gnome-terminal-server
