@@ -12,19 +12,14 @@ ZENITYWM="--name \"LXD Developer Terminal\" --class lxd-terminal --window-icon $
 # Trying to make everything appear with the same icon
 export BAMF_DESKTOP_FILE_HINT=/var/lib/snapd/desktop/applications/lxd-terminal_lxd-terminal.desktop
 
+# Stop when done
+cleanup () {
+	${LXCCMD} stop ${LXCIMAGE} || true
+}
+trap cleanup EXIT
+
 STATE=$( ${LXCCMD} list -f csv -c s "^${LXCIMAGE}$" )
-
-if [ "${STATE}" == "" ]; then
-	zenity ${ZENITYWM} --error --title "LXD Terminal" --text "Unable to determine state for container <tt>${LXCIMAGE}</tt>. Can not start terminal service." 
-	exit -1
-fi
-
 if [ "${STATE}" != "RUNNING" ]; then
-	# Stop when done
-	cleanup () {
-		${LXCCMD} stop ${LXCIMAGE} || true
-	}
-	trap cleanup EXIT
 
 	(
 		# Ensure it is running
