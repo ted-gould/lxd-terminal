@@ -56,6 +56,9 @@ parts:
     stage-packages:
       - adwaita-icon-theme-full
       - dmz-cursor-theme
+      - fonts-noto
+      - fonts-ubuntu
+      - fonts-ubuntu-console
       - gsettings-desktop-schemas
       - libatk-bridge2.0-0
       - libatk1.0-0
