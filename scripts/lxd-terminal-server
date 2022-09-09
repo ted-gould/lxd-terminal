@@ -37,4 +37,4 @@ else
 fi
 
 # NOTE: No exec so that we can stop when finished
-${SNAP}/usr/libexec/gnome-terminal-server
+${SNAP}/usr/libexec/gnome-terminal-server --app-id cx.gould.lxdterminal

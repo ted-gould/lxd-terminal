@@ -32,6 +32,7 @@ parts:
       sed -i "s|GNOME_TERMINAL_SCREEN|LXD_TERMINAL_SCREEN|" $SNAPCRAFT_PART_SRC/src/terminal-defines.hh
       sed -i "s|org.gnome.Terminal|cx.gould.lxdterminal|" $SNAPCRAFT_PART_SRC/src/org.gnome.Terminal.xml
       sed -i "s|gdk_set_program_class(\"Gnome-terminal\");|gdk_set_program_class(\"lxd-terminal\");|" $SNAPCRAFT_PART_SRC/src/terminal-app.cc
+      sed -i "s|g_set_prgname(\"gnome-terminal-server\");|g_set_prgname(\"lxd-terminal-server\");|" $SNAPCRAFT_PART_SRC/src/server.cc
       # Change the default shell
       cp $SNAPCRAFT_PROJECT_DIR/eggshell.cc $SNAPCRAFT_PART_SRC/src/
     build-packages:
