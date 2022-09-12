@@ -126,11 +126,10 @@ parts:
     source-subdir: data
   lxd-client:
     plugin: go
-    source: .
-    override-pull: |
-      GO111MODULE=off go get -v -x github.com/lxc/lxd/lxc
+    source: https://github.com/lxc/lxd.git
+    source-tag: stable-5.0
     override-build: |
-      GO111MODULE=off go install github.com/lxc/lxd/lxc
+      go install ./lxc
   gtk-locales:
     plugin: nil
     override-pull: |
