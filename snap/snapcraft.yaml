@@ -176,6 +176,8 @@ apps:
       - lxd-terminal-dbus-plug
       - lxd
       - desktop
+      - x11
+      - wayland
   delete:
     command: lxd-terminal-delete
     desktop: share/lxd-terminal-delete.desktop
@@ -188,6 +190,8 @@ apps:
       - lxd-terminal-dbus-plug
       - lxd
       - desktop
+      - x11
+      - wayland
   server:
     command: lxd-terminal-server
     daemon: simple
@@ -206,6 +210,8 @@ apps:
       - lxd
       - desktop
       - gsettings
+      - x11
+      - wayland
 
 layout:
   /usr/share:
