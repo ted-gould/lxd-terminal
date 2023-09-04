@@ -126,7 +126,7 @@ parts:
     source-subdir: data
   lxd-client:
     plugin: go
-    source: https://github.com/lxc/lxd.git
+    source: https://github.com/canonical/lxd.git
     source-tag: stable-5.0
     override-build: |
       go install ./lxc
